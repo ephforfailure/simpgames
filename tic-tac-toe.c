@@ -80,9 +80,9 @@ bool game_is_won(game_t* game) {
 				is_won = false;
 				break;
 			}
-			if (is_won) {
-				return is_won;
-			}
+		}
+		if (is_won) {
+			return is_won;
 		}
 	}
 
@@ -97,9 +97,9 @@ bool game_is_won(game_t* game) {
 				is_won = false;
 				break;
 			}
-			if (is_won) {
-				return is_won;
-			}
+		}
+		if (is_won) {
+			return is_won;
 		}
 	}
 
