@@ -1,29 +1,35 @@
 #include <raylib.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <bool.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <math.h>
+
+
+/*
+ *	Game Logic
+ */
 
 /* NOTE The code will disable cross wins if these width and height aren't the same. */
 #define BOARD_WIDTH  3
 #define BOARD_HEIGHT 3
 
-typedef enum {
-	PLAYER_ZERO;
-	PLAYER_X;
-	PLAYER_O;
+typedef enum PLAYER_E {
+	PLAYER_ZERO,
+	PLAYER_X,
+	PLAYER_O,
 } player_e;
 
-typedef enum {
-	GAME_INACTIVE;
-	GAME_ACTIVE;
-	GAME_TIE;
+typedef enum GAME_STATE_E {
+	GAME_INACTIVE,
+	GAME_ACTIVE,
+	GAME_TIE,
 
-	GAME_WIN = 1000;
-	GAME_WIN_ROW;
-	GAME_WIN_COLUMN;
-	GAME_WIN_CROSS_LEFT;
-	GAME_WIN_CROSS_RIGHT;
+	GAME_WIN = 1000,
+	GAME_WIN_ROW,
+	GAME_WIN_COLUMN,
+	GAME_WIN_CROSS_LEFT,
+	GAME_WIN_CROSS_RIGHT,
 } game_state_e;
 
 typedef struct {
@@ -41,13 +47,15 @@ int board_area(void) {
 game_t* new_game(void) {
 	game_t* game = malloc(sizeof(game_t));
 	assert(game);
-	game.table = malloc(sizeof(player_e) * board_area());
-	assert(game->table);
+	game->board = malloc(sizeof(player_e) * board_area());
+	assert(game->board);
 	int i = 0;
 	for (;i<board_area(); i++) {
-		game->table[i] = PLAYER_ZERO;
+		game->board[i] = PLAYER_ZERO;
 	}
-	game.current_player = PLAYER_X;
+	game->current_player = PLAYER_X;
+	game->state = GAME_INACTIVE;
+	game->win_offset = -127;
 	return game;
 }
 
@@ -64,7 +72,7 @@ bool game_is_cell_zero(game_t* game, int x, int y) {
 }
 
 void game_move(game_t* game, int x, int y) {
-	if game_is_cell_zero(game, x, y) {
+	if (game_is_cell_zero(game, x, y)) {
 		int index = board_get_index(x, y);
 		game->board[index] = game->current_player;
 	} else {
@@ -73,7 +81,7 @@ void game_move(game_t* game, int x, int y) {
 }
 
 void game_switch_player(game_t* game) {
-	if game->current_player == PLAYER_X {
+	if (game->current_player == PLAYER_X) {
 		game->current_player = PLAYER_O;
 	} else {
 		game->current_player = PLAYER_X;
@@ -81,10 +89,11 @@ void game_switch_player(game_t* game) {
 }
 
 bool game_is_over(game_t* game) {
+
 	bool is_won;
 	int y, x, index = 0;
 
-	bool tie = true
+	bool tie = true;
 	for (index=0; index<board_area(); index++){
 		player_e player = game->board[index];
 		if (player == PLAYER_ZERO) {
@@ -94,7 +103,7 @@ bool game_is_over(game_t* game) {
 	}
 	if (tie) {
 		game->state = GAME_TIE;
-		return tie
+		return tie;
 	}
 
 	/* check for row wins */
@@ -102,9 +111,9 @@ bool game_is_over(game_t* game) {
 		is_won = true;
 		index = board_get_index(0, y);
 		player_e player = game->board[index];
-		for (x=0; x<BOARD_HEIGHT, x++) {
+		for (x=0; x<BOARD_HEIGHT; x++) {
 			index = board_get_index(x, y);
-			if (player != board[index]) {
+			if (player != game->board[index]) {
 				is_won = false;
 				break;
 			}
@@ -121,9 +130,9 @@ bool game_is_over(game_t* game) {
 		is_won = true;
 		index = board_get_index(x, 0);
 		player_e player = game->board[index];
-		for (y=0; y<BOARD_WIDTH, y++) {
+		for (y=0; y<BOARD_WIDTH; y++) {
 			index = board_get_index(x, y);
-			if (player_row != board[index]) {
+			if (player != game->board[index]) {
 				is_won = false;
 				break;
 			}
@@ -141,23 +150,23 @@ bool game_is_over(game_t* game) {
 
 	/* check for cross wins */
 
-	/*
-	 * -------------
+	/* -------------
 	 * | 0 | 1 | 2 |
 	 * | 3 | 4 | 5 |
 	 * | 6 | 7 | 8 |
 	 * -------------
-	 *  0, 4, 8
-	 *  2, 4, 6
-	 *  -----------
-	 *
+	 *  left:  0, 4, 8
+	 *  right: 2, 4, 6 
 	 */
+
+	/* check for left cross win */
 	int offset;
+
 	player_e player = game->board[0];
-	offset = BOARD_WIDTH+1
+	offset = BOARD_WIDTH + 1;
 	is_won = true;
 	for (index=0; index<board_area(); index += offset) {
-		if player != game->board[index] {
+		if (player != game->board[index]){
 			is_won = false;
 			break;
 		}
@@ -168,10 +177,11 @@ bool game_is_over(game_t* game) {
 	}
 
 
-	offset = BOARD_WIDTH-1
+	/* check for right cross win */
+	offset = BOARD_WIDTH - 1;
 	is_won = true;
 	for (index=offset; index<board_area(); index += offset) {
-		if player != game->board[index] {
+		if (player != game->board[index]) {
 			is_won = false;
 			break;
 		}
@@ -183,17 +193,16 @@ bool game_is_over(game_t* game) {
 	return false;
 }
 
-
-
-
 int main(void) {
 
 	game_t* game = new_game();
-
 	
 	printf("hello, world!\n");
 
 	InitWindow(300, 300, "HelloWorld");
+	while (WindowShouldClose()) {
+		
+	}
 
 
 }
