@@ -19,13 +19,17 @@ typedef struct {
 	player_e* board;
 } game_t;
 
+int board_area(void) {
+	return BOARD_WIDTH * BOARD_HEIGHT
+}
+
 game_t* new_game(void) {
 	game_t* game = malloc(sizeof(game_t));
 	assert(game);
-	game.table = malloc(sizeof(player_e) * BOARD_WIDTH * BOARD_WIDTH);
+	game.table = malloc(sizeof(player_e) * board_area());
 	assert(game.table);
 	int i = 0;
-	for (;i<(BOARD_HEIGHT*BOARD_WIDTH); i++) {
+	for (;i<board_area(); i++) {
 		game.table[i] = PLAYER_ZERO;
 	}
 	game.current_player = PLAYER_X;
@@ -35,7 +39,7 @@ game_t* new_game(void) {
 int board_get_index(int x, int y) {
 	int index = BOARD_WIDTH * y;
 	index += x;
-	assert((BOARD_WIDTH*BOARD_HEIGHT) > index);
+	assert(board_area() > index);
 	return index;
 }
 
@@ -62,7 +66,45 @@ void game_switch_player(game_t* game) {
 }
 
 bool game_is_won(game_t* game) {
-	
+	bool is_won;
+	int y, x = 0, 0;
+
+	/* check for row wins */
+	for (y=0; y<BOARD_WIDTH, y++) { 
+		is_won = true;
+		int index = board_get_index(0, y);
+		player_e player_row = game->board[index];
+		for (x=0; x<BOARD_HEIGHT, x++) {
+			index = board_get_index(x, y);
+			if (player_row != board[index]) {
+				is_won = false;
+				break;
+			}
+			if (is_won) {
+				return is_won;
+			}
+		}
+	}
+
+	/* check for column wins */
+	for (x=0; x<BOARD_HEIGHT, x++) { 
+		is_won = true;
+		int index = board_get_index(x, 0);
+		player_e player_row = game->board[index];
+		for (y=0; y<BOARD_WIDTH, y++) {
+			index = board_get_index(x, y);
+			if (player_row != board[index]) {
+				is_won = false;
+				break;
+			}
+			if (is_won) {
+				return is_won;
+			}
+		}
+	}
+
+	/* check for cross wins */
+
 }
 
 
