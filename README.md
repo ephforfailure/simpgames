@@ -9,6 +9,7 @@ A collection of games for learning game dev using C and [Raylib](https://www.ray
 - [ ] **Cookie Clicker**
 - [ ] **Snake** 
 - [ ] **Pong** 
+- [ ] **Mine Sweeper**
 - [ ] **Point and Click Adventure** 
 - [ ] **Tetris** 
 - [ ] **Flappy Birds** 
