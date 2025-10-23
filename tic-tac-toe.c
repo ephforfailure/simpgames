@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <math.h>
 
 
@@ -13,6 +12,9 @@
 /* NOTE The code will disable cross wins if these width and height aren't the same. */
 #define BOARD_WIDTH  3
 #define BOARD_HEIGHT 3
+
+#define WINDOW_WIDTH  300
+#define WINDOW_HEIGHT 300
 
 typedef enum PLAYER_E {
 	PLAYER_ZERO,
@@ -193,16 +195,38 @@ bool game_is_over(game_t* game) {
 	return false;
 }
 
+int cell_width_offset(void) {
+	return WINDOW_WIDTH / BOARD_WIDTH;
+} 
+int cell_height_offset(void) {
+	return WINDOW_HEIGHT / BOARD_HEIGHT;
+}
+
+void DrawGameGrid(game_t *game) {
+	int x = 0;
+	for (x=0; x<BOARD_WIDTH; x++) {
+		int x_point = x * cell_width_offset();
+		DrawLine(x_point, 0, x_point, WINDOW_HEIGHT, BLACK);
+	}
+	int y=0;
+	for (y=0; y<BOARD_HEIGHT; y++) {
+		int y_point = y * cell_height_offset();
+		DrawLine(0, y_point, WINDOW_WIDTH, y_point, BLACK);
+	}
+}
+
 int main(void) {
 
 	game_t* game = new_game();
 	
-	printf("hello, world!\n");
+	InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Tic-Tac-Toe");
 
-	InitWindow(300, 300, "HelloWorld");
-	while (WindowShouldClose()) {
-		
+	Color bg_color = RED;
+
+	while (!WindowShouldClose()) {
+		ClearBackground(bg_color);
+		BeginDrawing();
+			DrawGameGrid(game);
+		EndDrawing();
 	}
-
-
 }
